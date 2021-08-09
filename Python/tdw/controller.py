@@ -44,6 +44,8 @@ class Controller(object):
         # If True, we already quit (suppresses a warning that the build is down).
         self._quit: bool = False
 
+        self.__frame: int = 0
+
         # Compare the installed version of the tdw Python module to the latest on PyPi.
         # If there is a difference, recommend an upgrade.
         if check_version:
@@ -127,10 +129,20 @@ class Controller(object):
         if self._quit:
             return []
 
+        # Increment the frame count.
+        self.__frame += 1
+        try:
+            frame_bytes: bytes = int.to_bytes(self.__frame, byteorder='big', length=4)
+        # Prevent an unlikely overflow error.
+        # The build doesn't actually need the frame to be greater than the previous, just different.
+        except OverflowError:
+            self.__frame = 0
+            frame_bytes: bytes = int.to_bytes(self.__frame, byteorder='big', length=4)
+
         if isinstance(commands, list):
-            msg = [json.dumps(commands).encode('utf-8')]
+            msg = [json.dumps(commands).encode('utf-8'), frame_bytes]
         else:
-            msg = [json.dumps([commands]).encode('utf-8')]
+            msg = [json.dumps([commands]).encode('utf-8'), frame_bytes]
 
         # Send the commands.
         self.socket.send_multipart(msg)
