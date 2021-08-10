@@ -130,15 +130,7 @@ class Controller(object):
             return []
 
         # Increment the frame count.
-        self.__frame += 1
-        try:
-            frame_bytes: bytes = int.to_bytes(self.__frame, byteorder='big', length=4)
-        # Prevent an unlikely overflow error.
-        # The build doesn't actually need the frame to be greater than the previous, just different.
-        except OverflowError:
-            self.__frame = 0
-            frame_bytes: bytes = int.to_bytes(self.__frame, byteorder='big', length=4)
-
+        frame_bytes = self.__increment_frame()
         if isinstance(commands, list):
             msg = [json.dumps(commands).encode('utf-8'), frame_bytes]
         else:
@@ -161,6 +153,9 @@ class Controller(object):
             ftre = False
             for i in range(len(resp) - 1):
                 if resp[i][4:8] == b'ftre':
+                    # Increment the frame count.
+                    frame_bytes = self.__increment_frame()
+                    msg[-1] = frame_bytes
                     ftre = True
                     self.socket.send_multipart(msg)
                     resp = self.socket.recv_multipart()
@@ -570,3 +565,20 @@ class Controller(object):
                           f"\npip3 install tdw -U")
         else:
             print("Your installed tdw Python module is up to date with PyPi.")
+
+    def __increment_frame(self) -> bytes:
+        """
+        Increment the frame counter.
+
+        :return: The frame counter as bytes.
+        """
+
+        self.__frame += 1
+        try:
+            frame_bytes: bytes = int.to_bytes(self.__frame, byteorder='big', length=4)
+        # Prevent an unlikely overflow error.
+        # The build doesn't actually need the frame to be greater than the previous, just different.
+        except OverflowError:
+            self.__frame = 0
+            frame_bytes: bytes = int.to_bytes(self.__frame, byteorder='big', length=4)
+        return frame_bytes
