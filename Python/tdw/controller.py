@@ -154,8 +154,9 @@ class Controller(object):
             for i in range(len(resp) - 1):
                 if resp[i][4:8] == b'ftre':
                     # Increment the frame count.
-                    frame_bytes = self.__increment_frame()
-                    msg[-1] = frame_bytes
+                    #frame_bytes = self.__increment_frame()
+                    #msg[-1] = frame_bytes
+                    #print(msg, self.__frame)
                     ftre = True
                     self.socket.send_multipart(msg)
                     resp = self.socket.recv_multipart()
