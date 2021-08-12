@@ -10,10 +10,13 @@ To upgrade from TDW v1.7 to v1.8, read [this guide](Documentation/upgrade_guides
 
 #### New Commands
 
-| Command          | Description                            |
-| ---------------- | -------------------------------------- |
+| Command                                 | Description                                                  |
+| --------------------------------------- | ------------------------------------------------------------ |
+| `adjust_directional_light_intensity_by` | Adjust the intensity of the directional light (the sun) by a factor. |
+| `set_directional_light_color`           | Set the color of the directional light (the sun).            |
+| `adjust_point_lights_intensity_by`      | Adjust the intensity of all point lights in the scene by a factor. |
 | `send_occlusion` | Send occlusion data to the controller. |
-
+| `send_lights`                           | Send data for each directional light and point light in the scene. |
 
 ### Output Data
 
@@ -22,10 +25,24 @@ To upgrade from TDW v1.7 to v1.8, read [this guide](Documentation/upgrade_guides
 | Output Data | Description                                                  |
 | ----------- | ------------------------------------------------------------ |
 | `Occlusion` | To what extent parts of the scene environment (such as walls) are occluding objects. |
+| `Lights`    | Data for all lights in the scene. |
+
+### `tdw` module
+
+- (Backend) Added `packaging` as a required module.
+
+#### `Build` (backend)
+
+- Added optional parameter `check_head` to `get_url()`. If True, check the HTTP headers to make sure that the release exists.
+
+#### `PyPi` (backend)
+
+- Added: `required_tdw_version_is_installed(required_version, build_version)` Check whether the correct version of TDW is installed. This is useful for other modules such as the Magnebot API that rely on certain versions of TDW. 
 
 ### Example Controllers
 
 - Added: `occlusion.py`
+- Added: `lights_output_data.py`
 
 ### Benchmark
 

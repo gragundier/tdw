@@ -9,6 +9,7 @@
 | Command | Description |
 | --- | --- |
 | [`add_magnebot`](#add_magnebot) | Add a Magnebot to the scene. For further documentation, see: Documentation/misc_frontend/robots.md For a high-level API, see: <ulink url="https://github.com/alters-mit/magnebot">https://github.com/alters-mit/magnebot</ulink> |
+| [`adjust_point_lights_intensity_by`](#adjust_point_lights_intensity_by) | Adjust the intensity of all point lights in the scene by a value. Note that many scenes don't have any point lights. |
 | [`apply_force`](#apply_force) | Apply a force into the world to an target position. The force will impact any objects between the origin and the target position. |
 | [`create_avatar`](#create_avatar) | Create an avatar (agent). |
 | [`create_empty_environment`](#create_empty_environment) | Create an empty environment. This must be called after load_scene.  |
@@ -205,8 +206,10 @@
 
 | Command | Description |
 | --- | --- |
+| [`adjust_directional_light_intensity_by`](#adjust_directional_light_intensity_by) | Adjust the intensity of the directional light (the sun) by a value. |
 | [`reset_directional_light_rotation`](#reset_directional_light_rotation) | Reset the rotation of the directional light (the sun). |
 | [`rotate_directional_light_by`](#rotate_directional_light_by) | Rotate the directional light (the sun) by an angle and axis. This command will change the direction of cast shadows, which could adversely affect lighting that uses an HDRI skybox, Therefore this command should only be used for interior scenes where the effect of the skybox is less apparent. The original relationship between directional (sun) light and HDRI skybox can be restored by using the reset_directional_light_rotation command. |
+| [`set_directionial_light_color`](#set_directionial_light_color) | Set the color of the directional light (the sun). |
 
 **Flex Container Command**
 
@@ -532,10 +535,11 @@
 | Command | Description |
 | --- | --- |
 | [`send_composite_objects`](#send_composite_objects) | Send data for every composite object in the scene.  |
-| [`send_environments`](#send_environments) | Receive data about the environment(s) in the scene. Only send this command after initializing the environment in one of two ways: 1) create_exterior_walls, 2) load_streamed_scene  |
+| [`send_environments`](#send_environments) | Receive data about the environment(s) in the scene. Only send this command after initializing the environment in one of two ways: 1) create_exterior_walls, 2) add_scene  |
 | [`send_humanoids`](#send_humanoids) | Send transform (position, rotation, etc.) data for humanoids in the scene.  |
 | [`send_junk`](#send_junk) | Send junk data.  |
 | [`send_keyboard`](#send_keyboard) | Request keyboard input data.  |
+| [`send_lights`](#send_lights) | Send data for each directional light and point light in the scene.  |
 | [`send_version`](#send_version) | Receive data about the build version.  |
 | [`send_vr_rig`](#send_vr_rig) | Send data for a VR Rig currently in the scene.  |
 
@@ -590,6 +594,21 @@ Add a Magnebot to the scene. For further documentation, see: Documentation/misc_
 | `"id"` | int | The unique ID of the Magnebot. | 0 |
 | `"position"` | Vector3 | The initial position of the Magnebot. | {"x": 0, "y": 0, "z": 0} |
 | `"rotation"` | Vector3 | The initial rotation of the Magnebot in Euler angles. | {"x": 0, "y": 0, "z": 0} |
+
+***
+
+## **`adjust_point_lights_intensity_by`**
+
+Adjust the intensity of all point lights in the scene by a value. Note that many scenes don't have any point lights.
+
+
+```python
+{"$type": "adjust_point_lights_intensity_by", "intensity": 0.125}
+```
+
+| Parameter | Type | Description | Default |
+| --- | --- | --- | --- |
+| `"intensity"` | float | Adjust all point lights in the scene by this value. | |
 
 ***
 
@@ -800,7 +819,7 @@ Rotate the HDRI skybox by a given value and the sun light by the same value in t
 
 | Parameter | Type | Description | Default |
 | --- | --- | --- | --- |
-| `"angle"` | float | The value to rotate the HDRI skybox by. Skyboxes are always rotated in a positive direction; values are clamped between 0 and 360, and any negative values are forced positive. | |
+| `"angle"` | float | The value to rotate the HDRI skybox by. Skyboxes are always rotated in a positive direction; values are clamped between 0 and 360, and any negative values are forced positive. Rotate around the pitch axis to set the elevation of the sun. Rotate around the yaw axis to set the angle of the sun. | |
 
 ***
 
@@ -3040,7 +3059,27 @@ List of surface material types.
 
 # DirectionalLightCommand
 
-These commands adjust the directional light(s) in the scene. The directional light is usually the "sunlight" of the scene, but is distinct from the sunlight of HDRI skyboxes.
+These commands adjust the directional light(s) in the scene. There is always at least one directional light in the scene (the sun).
+
+***
+
+## **`adjust_directional_light_intensity_by`**
+
+Adjust the intensity of the directional light (the sun) by a value.
+
+
+```python
+{"$type": "adjust_directional_light_intensity_by", "intensity": 0.125}
+```
+
+```python
+{"$type": "adjust_directional_light_intensity_by", "intensity": 0.125, "index": 0}
+```
+
+| Parameter | Type | Description | Default |
+| --- | --- | --- | --- |
+| `"intensity"` | float | Adjust the intensity of the sunlight by this value. | |
+| `"index"` | int | The index of the light. This should almost always be 0. The scene "archviz_house" has two directional lights; for this scene, index can be 0 or 1. | 0 |
 
 ***
 
@@ -3091,6 +3130,26 @@ An axis of rotation.
 | `"pitch"` | Nod your head "yes". |
 | `"yaw"` | Shake your head "no". |
 | `"roll"` | Put your ear to your shoulder. |
+
+***
+
+## **`set_directionial_light_color`**
+
+Set the color of the directional light (the sun).
+
+
+```python
+{"$type": "set_directionial_light_color", "color": {"r": 0.219607845, "g": 0.0156862754, "b": 0.6901961, "a": 1.0}}
+```
+
+```python
+{"$type": "set_directionial_light_color", "color": {"r": 0.219607845, "g": 0.0156862754, "b": 0.6901961, "a": 1.0}, "index": 0}
+```
+
+| Parameter | Type | Description | Default |
+| --- | --- | --- | --- |
+| `"color"` | Color | The color of the sunlight. | |
+| `"index"` | int | The index of the light. This should almost always be 0. The scene "archviz_house" has two directional lights; for this scene, index can be 0 or 1. | 0 |
 
 # FlexContainerCommand
 
@@ -6596,7 +6655,7 @@ Options for when to send data.
 
 ## **`send_environments`**
 
-Receive data about the environment(s) in the scene. Only send this command after initializing the environment in one of two ways: 1) create_exterior_walls, 2) load_streamed_scene 
+Receive data about the environment(s) in the scene. Only send this command after initializing the environment in one of two ways: 1) create_exterior_walls, 2) add_scene 
 
 - <font style="color:green">**Sends data**: This command instructs the build to send output data.</font>
 
@@ -6707,6 +6766,38 @@ Request keyboard input data.
 
 ```python
 {"$type": "send_keyboard", "frequency": "once"}
+```
+
+| Parameter | Type | Description | Default |
+| --- | --- | --- | --- |
+| `"frequency"` | Frequency | The frequency at which data is sent. | "once" |
+
+#### Frequency
+
+Options for when to send data.
+
+| Value | Description |
+| --- | --- |
+| `"once"` | Send the data for this frame only. |
+| `"always"` | Send the data every frame. |
+| `"never"` | Never send the data. |
+
+***
+
+## **`send_lights`**
+
+Send data for each directional light and point light in the scene. 
+
+- <font style="color:green">**Sends data**: This command instructs the build to send output data.</font>
+
+    - <font style="color:green">**Type:** [`Lights`](output_data.md#Lights)</font>
+
+```python
+{"$type": "send_lights"}
+```
+
+```python
+{"$type": "send_lights", "frequency": "once"}
 ```
 
 | Parameter | Type | Description | Default |
